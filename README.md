@@ -1,9 +1,22 @@
 # RoboLink-DSP
 
-[Serial communication](http://eclipsesource.com/blogs/2012/10/17/serial-communication-in-java-with-raspberry-pi-and-rxtx/)
+[Drive](https://drive.google.com/drive/folders/0B1_BoISbn_dWcWpTa3dXdlRmWVk)
 
-![alt text](http://eclipsesource.com/blogs/wp-content/uploads/2012/10/FTDI-to-RasPi.png "FTDI to PI")
-![alt text](http://image.slidesharecdn.com/rpi-java8-uni-141123214849-conversion-gate02/95/raspberry-pi-with-java-8-73-638.jpg?cb=1416779506 "USB cable")
+# STFT - ISTFT
+[1](http://stackoverflow.com/a/20409020)
+[2](https://gist.github.com/endolith/2784026)
+[3](https://github.com/mne-tools/mne-python/blob/master/mne/time_frequency/stft.py)
 
-Send from PC to PI (UART)
-![alt text](https://cdn.sparkfun.com/assets/3/3/e/9/b/521e9419757b7f6e778b4567.png "PC to PI")
+# Filters
+[1](http://mpastell.com/2010/01/18/fir-with-scipy/)
+
+# UART
+[1](https://electrosome.com/uart-raspberry-pi-python/)
+[2](http://www.elinux.org/Serial_port_programming)
+
+# NXT
+[1](https://github.com/skorokithakis/nxt-python)
+[2](https://github.com/eelviny/nxt-python)
+
+# I2C
+[1](http://www.instructables.com/id/Raspberry-Pi-I2C-Python/?ALLSTEPS)
