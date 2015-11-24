@@ -9,11 +9,11 @@
 
 # Filters
 Packages:
-'''
+```
 sudo apt-get install python-numpy
 sudo apt-get install python-scipy
 sudo apt-get install python-matplotlib
-'''
+```
 [http://stackoverflow.com/questions/25191620/creating-lowpass-filter-in-scipy-understanding-methods-and-units/25192640#25192640](http://stackoverflow.com/questions/25191620/creating-lowpass-filter-in-scipy-understanding-methods-and-units/25192640#25192640)
 [http://mpastell.com/2010/01/18/fir-with-scipy/](http://mpastell.com/2010/01/18/fir-with-scipy/)
 
