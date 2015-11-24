@@ -3,20 +3,27 @@
 [Drive](https://drive.google.com/drive/folders/0B1_BoISbn_dWcWpTa3dXdlRmWVk)
 
 # STFT - ISTFT
-[1](http://stackoverflow.com/a/20409020)
-[2](https://gist.github.com/endolith/2784026)
-[3](https://github.com/mne-tools/mne-python/blob/master/mne/time_frequency/stft.py)
+[http://stackoverflow.com/a/20409020](http://stackoverflow.com/a/20409020)
+[https://gist.github.com/endolith/2784026](https://gist.github.com/endolith/2784026)
+[https://github.com/mne-tools/mne-python/blob/master/mne/time_frequency/stft.py](https://github.com/mne-tools/mne-python/blob/master/mne/time_frequency/stft.py)
 
 # Filters
-[1](http://mpastell.com/2010/01/18/fir-with-scipy/)
+Packages:
+'''
+sudo apt-get install python-numpy
+sudo apt-get install python-scipy
+sudo apt-get install python-matplotlib
+'''
+[http://stackoverflow.com/questions/25191620/creating-lowpass-filter-in-scipy-understanding-methods-and-units/25192640#25192640](http://stackoverflow.com/questions/25191620/creating-lowpass-filter-in-scipy-understanding-methods-and-units/25192640#25192640)
+[http://mpastell.com/2010/01/18/fir-with-scipy/](http://mpastell.com/2010/01/18/fir-with-scipy/)
 
 # UART
-[1](https://electrosome.com/uart-raspberry-pi-python/)
-[2](http://www.elinux.org/Serial_port_programming)
+[https://electrosome.com/uart-raspberry-pi-python/](https://electrosome.com/uart-raspberry-pi-python/)
+[http://www.elinux.org/Serial_port_programming](http://www.elinux.org/Serial_port_programming)
 
 # NXT
-[1](https://github.com/skorokithakis/nxt-python)
-[2](https://github.com/eelviny/nxt-python)
+[https://github.com/skorokithakis/nxt-python](https://github.com/skorokithakis/nxt-python)
+[https://github.com/eelviny/nxt-python](https://github.com/eelviny/nxt-python)
 
 # I2C
-[1](http://www.instructables.com/id/Raspberry-Pi-I2C-Python/?ALLSTEPS)
+[http://www.instructables.com/id/Raspberry-Pi-I2C-Python/?ALLSTEPS](http://www.instructables.com/id/Raspberry-Pi-I2C-Python/?ALLSTEPS)
