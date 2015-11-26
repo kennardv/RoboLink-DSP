@@ -1,83 +1,74 @@
-import numpy as np
-from scipy.signal import butter, lfilter, freqz
-import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter
 
 class BandPassFilter:
-    def __init__(self, order, samplerate, lowcut, highcut):
-        self.order = order
-        self.fs = samplerate
+    def __init__(self, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5):
         self.lowcut = lowcut
         self.highcut = highcut
+        self.fs = fs
+        self.order = order
 
-    def butter_bandpass(self):
+
+    def butter_bandpass(self, order=5):
         nyq = 0.5 * self.fs
         low = self.lowcut / nyq
         high = self.highcut / nyq
-        # Design Nth order filter and return filter coefficients
-        b, a = butter(self.order, [low, high], btype='low', analog=False)
+        b, a = butter(order, [low, high], btype='band')
         return b, a
-
-    def butter_bandpass_filter(self, data):
-        b, a = self.butter_bandpass()
-        # Filter data along 1 dimension
+    
+    
+    def butter_bandpass_filter(self, data, order=5):
+        b, a = self.butter_bandpass(order)
         y = lfilter(b, a, data)
         return y
 
-    def plot_freq_resp(self, b, a):
-        # Compute frequency response of a digital filter
-        w, h = freqz(b, a, worN=8000)
-        # Plot the frequency response.
-        plt.figure(1)
-        plt.plot(0.5*self.fs*w/np.pi, np.abs(h), 'b')
-        plt.plot(self.lowcut, 0.5*np.sqrt(2), 'ko')
-        #plt.plot(self.highcut, 0.5*np.sqrt(2), 'ko')
-        plt.axvline(self.lowcut, color='k')
-        plt.axvline(self.highcut, color='k')
-        plt.xlim(0, 0.5*self.fs)
-        plt.title("Bandpass Filter Frequency Response")
-        plt.xlabel('Frequency [Hz]')
-        plt.ylabel('Gain')
-        plt.grid()
-        plt.show()
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import freqz
 
-    def plot(self, signals):
-        plt.figure(2)
-        
-        for element in signals:
-            plt.plot(t, element[0], element[1], label=element[2])
-            
-        plt.xlabel('Time [sec]')
-        plt.grid()
-        plt.legend()
-        plt.subplots_adjust(hspace=0.35)
-        plt.show()
-        
+# Sample rate and desired cutoff frequencies (in Hz).
+fs = 5000.0
+lowcut = 500.0
+highcut = 1250.0
+order = 5
+
+bpf = BandPassFilter(lowcut, highcut, fs, order)
+
+# Plot the frequency response for a few different orders.
+plt.figure(1)
+plt.clf()
+for order in [3, 6, 9]:
+    b, a = bpf.butter_bandpass(order)
+    w, h = freqz(b, a, worN=2000)
+    plt.plot((fs * 0.5 / np.pi) * w, abs(h), label="order = %d" % order)
+
+plt.plot([0, 0.5 * fs], [np.sqrt(0.5), np.sqrt(0.5)], '--', label='sqrt(0.5)')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Gain')
+plt.grid(True)
+plt.legend(loc='best')
 
 
-# Filter requirements.
-order = 6
-fs = 30.0       # sample rate, Hz
-lowcut = 3.667  # desired cutoff frequency of the filter, Hz
-highcut = 4.997
+# Filter a noisy signal.
+T = 0.05
+nsamples = T * fs
+t = np.linspace(0, T, nsamples, endpoint=False)
+a = 0.02
+f0 = 600.0
+x = 0.1 * np.sin(2 * np.pi * 1.2 * np.sqrt(t))
+x += 0.01 * np.cos(2 * np.pi * 312 * t + 0.1)
+x += a * np.cos(2 * np.pi * f0 * t + .11)
+x += 0.03 * np.cos(2 * np.pi * 2000 * t)
 
-bpf = BandPassFilter(order, fs, lowcut, highcut)
+y = bpf.butter_bandpass_filter(x, order)
 
-# Get the filter coefficients so we can check its frequency response.
-b, a = bpf.butter_bandpass()
-bpf.plot_freq_resp(b, a)
+plt.figure(2)
+plt.clf()
+plt.plot(t, x, label='Noisy signal')
+plt.plot(t, y, label='Filtered signal (%g Hz)' % f0)
+plt.xlabel('time (seconds)')
+plt.hlines([-a, a], 0, T, linestyles='--')
+plt.grid(True)
+plt.axis('tight')
+plt.legend(loc='upper left')
 
-
-# Demonstrate the use of the filter.
-# First make some data to be filtered.
-T = 5.0         # seconds
-n = int(T * fs) # total number of samples
-t = np.linspace(0, T, n, endpoint=False)
-# "Noisy" data.  We want to recover the 1.2 Hz signal from this.
-data = np.sin(1.2*2*np.pi*t) + 1.5*np.cos(9*2*np.pi*t) + 0.5*np.sin(12.0*2*np.pi*t)
-
-# Filter the data
-y = bpf.butter_bandpass_filter(data)
-
-# Plot both the original and filtered signals.
-# Data, color, description
-bpf.plot([[data, 'b-', 'data'], [y, 'g-', 'filtered data']])
+plt.show()
