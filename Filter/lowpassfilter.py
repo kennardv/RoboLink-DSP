@@ -29,7 +29,7 @@ class LowPassFilter:
         plt.plot(0.5*self.fs*w/np.pi, np.abs(h), 'b')
         plt.plot(self.cutoff, 0.5*np.sqrt(2), 'ko')
         plt.axvline(self.cutoff, color='k')
-        plt.xlim(0, 0.5*self.fs)
+        plt.xlim(0, 0.05*self.fs)
         plt.title("Lowpass Filter Frequency Response")
         plt.xlabel('Frequency [Hz]')
         plt.grid()
@@ -42,7 +42,7 @@ class LowPassFilter:
             plt.plot(t, element[0], element[1], label=element[2])
             
         plt.xlabel('Time [sec]')
-        plt.xlim([0, 0.2])
+        plt.xlim([1, 1.025])
         plt.grid()
         plt.legend()
         plt.subplots_adjust(hspace=0.35)
@@ -79,5 +79,4 @@ y = lpf.butter_lowpass_filter(data)
 
 # Plot both the original and filtered signals.
 # Data, color, description
-lpf.plot([[y, 'g-', 'filtered signal'], [sin1, 'r-', 'sin1']])
-
+lpf.plot([[data, 'g-', 'original signal'], [y, 'r-', 'filtered signal'], [y, 'b--', 'sin1']])
