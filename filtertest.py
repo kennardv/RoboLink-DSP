@@ -7,87 +7,81 @@ Created on Sun Nov 29 14:11:51 2015
 
 import wave
 import numpy as np
+from numpy import pi, sqrt, linspace
 import matplotlib.pyplot as plt
+from scipy import fft, arange
 from scipy.signal import freqz
 from Filter import bandpassfilter
 
-# wav file
+def plot_freqz_filter(Fs):
+    # Plot the frequency response for a few different orders.
+    plt.figure(1, (8, 5))
+    for order in [3, 6, 9]:
+        b, a = bpf.butter_bandpass(order)
+        w, h = freqz(b, a, worN=2000)
+        plt.plot((Fs * 0.5 / pi) * w, abs(h), label="order = %d" % order)
+    
+    plt.plot([0, 0.5 * Fs], [sqrt(0.5), sqrt(0.5)], '--', label='sqrt(0.5)')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Gain')
+    plt.grid(True)
+    plt.legend(loc='best')
+    plt.show()
+    
+def plotSignalAndSpectrum(y, Fs, title):
+    """ Signal plot """
+    n = len(y)              # Number of frames
+    k = arange(n)           # Evenly spaced values within interval
+    T = n / Fs              # Duration
+    t = linspace(0, T, n, endpoint=False)
+    
+    plt.figure()
+    plt.suptitle(title)
+    plt.subplot(211)
+    plt.plot(t, y)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+    
+    
+    """ Single-Sided Amplitude Spectrum of y(t) """
+    frq = k/T                   # two sides frequency range
+    frq = frq[range(n//2)]      # one side frequency range
+    
+    Y = fft(y)/n                # fft computing and normalization
+    Y = Y[range(n//2)]
+    
+    plt.subplot(212)
+    plt.plot(frq,abs(Y),'r')    # plotting the spectrum
+    plt.xlabel('Freq (Hz)')
+    plt.ylabel('|Y(freq)|')
+
+
+# WAV file
 wf = wave.open('Alarm01.wav', 'rb')
-# read all frames
-y = wf.readframes(-1)
-y = np.fromstring(y, dtype=np.int16)
-# get left channel only
-y = y[0::1]
+y = np.fromstring(wf.readframes(-1), dtype=np.int16) # read all frames
+y = y[0::2] # get left channel only
 
-# Sample rate and desired cutoff frequencies (in Hz).
-fs = wf.getframerate()
-lowcut = 2000
-highcut = 9000
-order = 5
+Fs = wf.getframerate()  # Sampling rate
+n = wf.getnframes()     # Number of frames
+k = arange(n)           # Evenly spaced values within interval
+T = n / Fs              # Duration
 
+# Plot original signal
+plotSignalAndSpectrum(y, Fs, 'Original signal')
+
+# Filter
+lowcut = 4000
+highcut = 8000
+order = 6
 # get bandpassfilter obj
-bpf = bandpassfilter.BandPassFilter(lowcut, highcut, fs, order)
+bpf = bandpassfilter.BandPassFilter(lowcut, highcut, Fs, order)
 
-
-# Plot the frequency response for a few different orders.
-plt.figure(1, (8, 5))
-plt.clf()
-for order in [3, 6, 9]:
-    b, a = bpf.butter_bandpass(order)
-    w, h = freqz(b, a, worN=2000)
-    plt.plot((fs * 0.5 / np.pi) * w, abs(h), label="order = %d" % order)
-
-plt.plot([0, 0.5 * fs], [np.sqrt(0.5), np.sqrt(0.5)], '--', label='sqrt(0.5)')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Gain')
-plt.grid(True)
-plt.legend(loc='best')
+# Plot of various filter orders
+# plot_freqz_filter(Fs)
 
 
 # Filter the sound signal.
-yfiltered = bpf.butter_bandpass_filter(y, order)
+yFilt = bpf.butter_bandpass_filter(y, order)
 
-T = len(y) / fs
-nsamples = T * fs
-t = np.linspace(0, T, nsamples, endpoint=False)
-
-# Plot in time domain
-plt.figure(2, (8, 5))
-plt.clf()
-plt.plot(t, y, 'b' ,label='Original signal')
-plt.plot(t, yfiltered, 'r', label='Filtered signal')
-plt.xlabel('Time (s)')
-plt.ylabel('Amplitude')
-plt.hlines([-a, a], 0, T, linestyles='--')
-plt.grid(True)
-plt.legend(loc='best')
-
-plt.show()
-
-
-# Power spectrum calculation
-p = 20*np.log10(np.abs(np.fft.rfft(y)))
-f = np.linspace(0, fs/2, len(p))
-pfiltered = 20*np.log10(np.abs(np.fft.rfft(y)))
-ffiltered = np.linspace(0, fs/2, len(p))
-
-# Plot power spectrum
-plt.figure(3, (8, 5))
-plt.clf()
-plt.plot(f, p, 'b-', label='Original signal')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Power')
-plt.grid(True)
-plt.legend(loc='best')
-
-plt.show()
-
-plt.figure(4, (8, 5))
-plt.clf()
-plt.plot(ffiltered, pfiltered, 'r-', label='Filtered signal')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Power')
-plt.grid(True)
-plt.legend(loc='best')
-
-plt.show()
+# Plot filtered signal
+plotSignalAndSpectrum(yFilt, Fs, 'Filtered signal')
