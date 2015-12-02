@@ -32,7 +32,7 @@ def plotSignalAndSpectrum(y, Fs, title):
     """ Signal plot """
     n = len(y)              # Number of frames
     k = arange(n)           # Evenly spaced values within interval
-    T = n / Fs              # Duration
+    T = float(n) / Fs       # Duration
     t = linspace(0, T, n, endpoint=False)
     
     plt.figure()
@@ -67,7 +67,7 @@ k = arange(n)           # Evenly spaced values within interval
 T = n / Fs              # Duration
 
 # Plot original signal
-plotSignalAndSpectrum(y, Fs, 'Original signal')
+#plotSignalAndSpectrum(y, Fs, 'Original signal')
 
 # Filter
 lowcut = 4000
@@ -84,4 +84,4 @@ bpf = bandpassfilter.BandPassFilter(lowcut, highcut, Fs, order)
 yFilt = bpf.butter_bandpass_filter(y, order)
 
 # Plot filtered signal
-plotSignalAndSpectrum(yFilt, Fs, 'Filtered signal')
+#plotSignalAndSpectrum(yFilt, Fs, 'Filtered signal')
