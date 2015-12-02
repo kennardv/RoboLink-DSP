@@ -9,8 +9,8 @@ import wave
 import numpy as np
 from numpy import pi, sqrt, linspace
 import matplotlib.pyplot as plt
-from scipy import fft, arange
-from scipy.signal import freqz
+from scipy import fft, arange, signal
+import math
 from Filter import bandpassfilter
 
 def plot_freqz_filter(Fs):
@@ -18,7 +18,7 @@ def plot_freqz_filter(Fs):
     plt.figure(1, (8, 5))
     for order in [3, 6, 9]:
         b, a = bpf.butter_bandpass(order)
-        w, h = freqz(b, a, worN=2000)
+        w, h = signal.freqz(b, a, worN=2000)
         plt.plot((Fs * 0.5 / pi) * w, abs(h), label="order = %d" % order)
     
     plt.plot([0, 0.5 * Fs], [sqrt(0.5), sqrt(0.5)], '--', label='sqrt(0.5)')
@@ -55,6 +55,7 @@ def plotSignalAndSpectrum(y, Fs, title):
     plt.xlabel('Freq (Hz)')
     plt.ylabel('|Y(freq)|')
 
+FsxBee = 6250
 
 # WAV file
 wf = wave.open('Alarm01.wav', 'rb')
@@ -65,6 +66,8 @@ Fs = wf.getframerate()  # Sampling rate
 n = wf.getnframes()     # Number of frames
 k = arange(n)           # Evenly spaced values within interval
 T = n / Fs              # Duration
+
+#y = signal.decimate(y, math.ceil(Fs/FsxBee), 5)
 
 # Plot original signal
 plotSignalAndSpectrum(y, Fs, 'Original signal')
