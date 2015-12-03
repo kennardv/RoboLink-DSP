@@ -26,7 +26,7 @@ stc = serialtransceiver.SerialTransceiver('/dev/ttyAMA0', 115200)
 yRecvTotal = np.array([], dtype=np.int16)
 i = 0
 while 1:
-    # Receive filtered chunk of signal via serial port
+    # Receive chunk of signal via serial port
     yRecv = stc.receive(chunksize)
     yRecvTotal = np.append(yRecvTotal, yRecv)
     

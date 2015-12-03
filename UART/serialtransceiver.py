@@ -30,7 +30,7 @@ class SerialTransceiver:
             bytetosend = hex(databytes[i])
             #print("Sending: ", bytetosend)
             bytetosend = int(bytetosend, 16)
-            #self.port.write(bytetosend)
+            self.port.write(bytetosend)
         
     def __del__(self):
         self.port.close()

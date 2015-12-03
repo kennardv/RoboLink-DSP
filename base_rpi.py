@@ -5,9 +5,6 @@ Created on Sun Nov 29 14:11:51 2015
 @author: Kennard
 """
 
-import threading
-import time
-
 import wave
 import numpy as np
 from scipy import arange
