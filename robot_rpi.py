@@ -5,8 +5,8 @@ Created on Thu Dec  3 13:02:26 2015
 @author: Kennard
 """
 
-import wave
 import numpy as np
+import sounddevice as sd
 
 from UART import serialtransceiver
 
@@ -30,8 +30,8 @@ while 1:
     yRecv = stc.receive(chunksize)
     yRecvTotal = np.append(yRecvTotal, yRecv)
     
-    print(yRecv)
-
+    # Play filtered chunk of signal via jack
+    sd.play(yRecv)
 
 
 

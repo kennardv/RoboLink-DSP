@@ -10,6 +10,8 @@ import numpy as np
 from scipy import arange
 import math
 
+import sounddevice as sd
+
 from Filter import bandpassfilter
 from UART import serialtransceiver
 
@@ -28,6 +30,7 @@ Fs = wf.getframerate()                                      # Sampling rate
 n = wf.getnframes()                                         # Number of frames
 k = arange(n)                                               # Evenly spaced values within interval
 T = n / Fs                                                  # Duration
+sw = wf.getsampwidth()
 
 chunk = 1024                                                # Chunk size
 chunks = math.ceil(n/chunk)                                 # Number of chunks
@@ -41,9 +44,9 @@ y = np.array_split(y, chunks)                               # Split signal in ch
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # Filter
-lowcut = 4000
-highcut = 8000
-order = 6
+lowcut = 200
+highcut = 2000
+order = 3                   # 3 is faster
 
 # get bandpassfilter obj
 bpf = bandpassfilter.BandPassFilter(lowcut, highcut, Fs, order)
@@ -56,16 +59,18 @@ bpf = bandpassfilter.BandPassFilter(lowcut, highcut, Fs, order)
 # get serial transceiver obj
 stc = serialtransceiver.SerialTransceiver('/dev/ttyAMA0', 115200)
 
+
 yFiltTotal = np.array([], dtype=np.int16)
 i = 0
 while i < chunks:
     # Filter the sound signal.
     yFilt = bpf.butter_bandpass_filter(y[i], order)
     yFiltTotal = np.append(yFiltTotal, yFilt)
-
     
     # Send filtered chunk of signal via serial port
     stc.send(yFilt)
+    # Play filtered chunk of signal via jack
+    #sd.play(yFilt)
     
     # Plot original signal
     #plotter.plotSignalAndSpectrum(y[i], Fs, 'Original signal')
