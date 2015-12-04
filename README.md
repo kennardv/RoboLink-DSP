@@ -2,6 +2,17 @@
 
 [Drive](https://drive.google.com/drive/folders/0B1_BoISbn_dWcWpTa3dXdlRmWVk)
 
+# Audio
+[http://python-sounddevice.readthedocs.org/en/0.2.0/](http://python-sounddevice.readthedocs.org/en/0.2.0/)
+Packages:
+```
+sudo apt-get install python-pip python-dev
+sudo apt-get install libffi-dev
+
+sudo pip install cffi
+sudo pip install sounddevice
+```
+
 # STFT - ISTFT
 [http://stackoverflow.com/a/20409020](http://stackoverflow.com/a/20409020)
 [https://gist.github.com/endolith/2784026](https://gist.github.com/endolith/2784026)
