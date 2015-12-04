@@ -6,7 +6,6 @@ Created on Tue Dec  1 22:34:56 2015
 """
 
 import serial
-from time import sleep
 
 class SerialTransceiver:
     
@@ -29,7 +28,6 @@ class SerialTransceiver:
         for i in range(len(databytes)):
             bytetosend = hex(databytes[i])
             #print("Sending: ", bytetosend)
-            bytetosend = int(bytetosend, 16)
             self.port.write(bytetosend)
         
     def __del__(self):
