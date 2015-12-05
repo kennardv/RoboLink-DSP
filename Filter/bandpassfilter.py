@@ -1,26 +1,61 @@
 from scipy.signal import butter, lfilter
+import numpy as np
+from threading import Thread, Event
+from queue import Queue
 
-class BandPassFilter:
-    def __init__(self, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5):
+class BandPassFilter(Thread):
+    i = 0
+    
+    def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5):
+        # Shared queue object        
+        self.q = q
+        
+        # Split data in chunks
+        n = len(data)
+        chunks = math.ceil(n/chunksize)
+        self.data = self.splitData(data, chunks)
+        
+        
         self.lowcut = lowcut
         self.highcut = highcut
         self.fs = fs
         self.order = order
-
-
+        
+        # Get filter coefficients
+        self.b, self.a = self.butter_bandpass(order)
+        
+        Thread.__init__(self)
+        
+    def run(self):
+        """ Iterate over the blocks of data.
+        Every block is filtered and added to the shared queue        
+        """
+        while i < chunks:
+            filtered = self.butter_bandpass_filter(self.data[i])
+            self.q.put(filtered)
+            
+            i = i + 1
+    
+    
+    def butter_bandpass_filter(self, data, order=5):
+        """ Returns an array of filtered values"""
+        #b, a = self.butter_bandpass(order)
+        y = lfilter(self.b, self.a, data)
+        return y
+        
+        
     def butter_bandpass(self, order=5):
         nyq = 0.5 * self.fs
         low = self.lowcut / nyq
         high = self.highcut / nyq
         b, a = butter(order, [low, high], btype='band')
         return b, a
-    
-    
-    def butter_bandpass_filter(self, data, order=5):
-        b, a = self.butter_bandpass(order)
-        y = lfilter(b, a, data)
-        return y
         
+    def splitData(data, chunks):
+        return np.array_split(data, chunks)
+        
+    
+    """  
     def run(self):
         import numpy as np
         import matplotlib.pyplot as plt
@@ -61,11 +96,13 @@ class BandPassFilter:
         x += 0.03 * np.cos(2 * np.pi * 2000 * t)
         
         """
+        """
         wf = wave.open('../Alarm01.wav', 'rb')
         signal = wf.readframes(1024)
         signal = np.fromstring(signal, dtype=np.int16)
         x = signal[0::2]
         right = signal[1::2]
+        """
         """
         
         y = bpf.butter_bandpass_filter(x, order)
@@ -81,3 +118,4 @@ class BandPassFilter:
         plt.legend(loc='upper left')
         
         plt.show()
+        """
