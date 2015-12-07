@@ -12,7 +12,7 @@ from queue import Queue
 
 class SerialReceiver(Thread):
     
-    def __init__(self, qs, qc, portname, baudrate=115200, timeout=1.0, readlength):
+    def __init__(self, qs, qc, portname, readlength, baudrate=115200, timeout=1.0):
         """Constantly polls the serial port for data and adds it to the queue object"""        
         self.qs = qs
         self.qc = qc
@@ -49,7 +49,7 @@ class SerialReceiver(Thread):
         
 class SerialSender(Thread):
     
-    def __init__(self, q, portname, baudrate=115200, timeout=1.0, readlength):
+    def __init__(self, q, portname, readlength, baudrate=115200, timeout=1.0):
         self.q = q
         self.readlength = readlength
         self.port = serial.Serial(portname,

@@ -1,5 +1,6 @@
 from scipy.signal import butter, lfilter
 import numpy as np
+import math
 from threading import Thread, Event
 from queue import Queue
 
@@ -12,8 +13,8 @@ class BandPassFilter(Thread):
         
         # Split data in chunks
         n = len(data)
-        chunks = math.ceil(n/chunksize)
-        self.data = self.splitData(data, chunks)
+        self.chunks = math.ceil(n/chunksize)
+        self.data = self.splitData(data, self.chunks)
         
         
         self.lowcut = lowcut
@@ -30,7 +31,8 @@ class BandPassFilter(Thread):
         """ Iterate over the blocks of data.
         Every block is filtered and added to the shared queue        
         """
-        while i < chunks:
+        i = 0
+        while i < self.chunks:
             filtered = self.butter_bandpass_filter(self.data[i])
             self.q.put(filtered)
             
@@ -55,8 +57,8 @@ class BandPassFilter(Thread):
         return np.array_split(data, chunks)
         
     
-    """  
-    def run(self):
+    
+    def show(self):
         import numpy as np
         import matplotlib.pyplot as plt
         from scipy.signal import freqz
@@ -96,13 +98,11 @@ class BandPassFilter(Thread):
         x += 0.03 * np.cos(2 * np.pi * 2000 * t)
         
         """
-        """
         wf = wave.open('../Alarm01.wav', 'rb')
         signal = wf.readframes(1024)
         signal = np.fromstring(signal, dtype=np.int16)
         x = signal[0::2]
         right = signal[1::2]
-        """
         """
         
         y = bpf.butter_bandpass_filter(x, order)
@@ -118,4 +118,3 @@ class BandPassFilter(Thread):
         plt.legend(loc='upper left')
         
         plt.show()
-        """
