@@ -8,7 +8,6 @@ Created on Sun Nov 29 14:11:51 2015
 import wave
 import numpy as np
 from scipy import arange
-import math
 from queue import Queue
 
 #import sounddevice as sd
@@ -18,6 +17,8 @@ from UART import serialtransceiver
 
 # Custom plotting class
 import plotter
+import musicplayer
+
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -64,10 +65,13 @@ bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # get serial transceiver obj
-ss = serialtransceiver.SerialSender(q, 'COM255', 9600)
+#ss = serialtransceiver.SerialSender(q, 'COM255', 9600)
+
+mp = musicplayer.MusicPlayer(q)
 
 bpf.start()
-ss.start()
+#ss.start()
+mp.start()
 
 
 """
