@@ -8,7 +8,7 @@ Created on Sun Nov 29 14:11:51 2015
 import wave
 import numpy as np
 from scipy import arange
-from queue import Queue
+from multiprocessing import Queue
 
 #import sounddevice as sd
 
@@ -67,35 +67,20 @@ bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
 # get serial transceiver obj
 #ss = serialtransceiver.SerialSender(q, 'COM255', 9600)
 
+# Local test
 mp = musicplayer.MusicPlayer(q)
 
 bpf.start()
 #ss.start()
+
+# Local test
 mp.start()
 
 
-"""
-yFiltTotal = np.array([], dtype=np.int16)
-i = 0
-while i < chunks:
-    # Filter the sound signal.
-    yFilt = bpf.butter_bandpass_filter(y[i], order)
-    yFiltTotal = np.append(yFiltTotal, yFilt)
-    
-    # Send filtered chunk of signal via serial port
-    stc.send(yFilt)
-    # Play filtered chunk of signal via jack
-    #sd.play(yFilt)
-    #sd.wait()
-    
-    # Plot original signal
-    #plotter.plotSignalAndSpectrum(y[i], Fs, 'Original signal')
-    
-    # Plot filtered signal
-    #plotter.plotSignalAndSpectrum(yFilt, Fs, 'Filtered signal')
-    
-    i = i + 1
-"""
+# Clean up threads
+bpf.join()
+mp.join()
+
 
 # Plot the total filtered signal to check if append works correctly
 #plotter.plotSignalAndSpectrum(yFiltTotal, Fs, 'Filtered signal')

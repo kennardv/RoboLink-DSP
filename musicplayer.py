@@ -7,18 +7,25 @@ Created on Sat Dec  5 16:27:41 2015
 
 import sounddevice as sd
 from threading import Thread
-from queue import Queue
+from multiprocessing import Queue
+import time
 
 class MusicPlayer(Thread):
-    def __init__(self, q, minimumblocks=20):
+    i = 0
+    
+    def __init__(self, q, minimumblocks=10):
         self.q = q
         self.minblocks = minimumblocks
         Thread.__init__(self)
         
     def run(self):
-        if not self.q.empty() and self.q.qsize() > self.minblocks:
-            # get removes and returns item from the queue
-            sd.play(self.q.get())
+        while self.i < 119:
+            print("Musicplayer thread")
+            if not self.q.empty() and self.q.qsize() > self.minblocks:
+                sd.play(self.q.get())
+                self.i = self.i + 1
+
+            time.sleep(0.5)
         
         # Optional: example
         # Get data and event

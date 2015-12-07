@@ -2,7 +2,8 @@ from scipy.signal import butter, lfilter
 import numpy as np
 import math
 from threading import Thread, Event
-from queue import Queue
+from multiprocessing import Queue
+import time
 
 class BandPassFilter(Thread):
     i = 0
@@ -31,12 +32,14 @@ class BandPassFilter(Thread):
         """ Iterate over the blocks of data.
         Every block is filtered and added to the shared queue        
         """
-        i = 0
-        while i < self.chunks:
-            filtered = self.butter_bandpass_filter(self.data[i])
+        while self.i < self.chunks:
+            filtered = self.butter_bandpass_filter(self.data[self.i])
             self.q.put(filtered)
             
-            i = i + 1
+            self.i = self.i + 1
+            print("Filtering")
+
+            time.sleep(0.5)
     
     
     def butter_bandpass_filter(self, data, order=5):
@@ -53,7 +56,7 @@ class BandPassFilter(Thread):
         b, a = butter(order, [low, high], btype='band')
         return b, a
         
-    def splitData(data, chunks):
+    def splitData(self, data, chunks):
         return np.array_split(data, chunks)
         
     

@@ -8,7 +8,7 @@ Created on Sat Dec  5 16:05:57 2015
 import serial
 import numpy as np
 from threading import Thread, Event
-from queue import Queue
+from multiprocessing import Queue
 
 class SerialReceiver(Thread):
     
