@@ -13,10 +13,10 @@ from multiprocessing import Queue
 #import sounddevice as sd
 
 from Filter import bandpassfilter
-from UART import serialtransceiver
 
 # Custom plotting class
 import plotter
+import musicplayer
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -38,7 +38,9 @@ sw = wf.getsampwidth()
 chunksize = 1024                                                # Chunk size
 #chunks = math.ceil(n/chunksize)                                 # Number of chunks
 
+
 wf.close()
+
 
 #plotter.plotSignalAndSpectrum(y, Fs, 'Original signal')    # Plot original signal before splitting in chunks
 #y = np.array_split(y, chunks)                               # Split signal in chunks
@@ -48,12 +50,10 @@ wf.close()
 # Shared queue object
 q = Queue()
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
 # Filter
 lowcut = 200
 highcut = 2000
-order = 3                   # lower is faster
+order = 3                   # 3 is faster
 
 # get bandpassfilter obj
 bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
@@ -63,17 +63,16 @@ bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-# get serial transceiver obj
-ss = serialtransceiver.SerialSender(q, 'COM255', 9600)
+# Local test
+mp = musicplayer.MusicPlayer(q)
 
-# Start threads
 bpf.start()
-ss.start()
+mp.start()
 
 
 # Clean up threads
 bpf.join()
-ss.join()
+mp.join()
 
 
 # Plot the total filtered signal to check if append works correctly

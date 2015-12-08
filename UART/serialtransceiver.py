@@ -7,8 +7,10 @@ Created on Sat Dec  5 16:05:57 2015
 
 import serial
 import numpy as np
+from array import array
 from threading import Thread, Event
 from multiprocessing import Queue
+import time
 
 class SerialReceiver(Thread):
     
@@ -32,6 +34,9 @@ class SerialReceiver(Thread):
         
     def run(self):
         data = self.port.read(self.readlength)
+        
+        # Sender converted to bytearray so convert back        
+        data = array('i', data)
         # Create numpy array from data
         data = np.fromstring(data, dtype=np.int16)
         #data = map(int, data)
@@ -66,7 +71,8 @@ class SerialSender(Thread):
     def run(self):
         if not self.q.empty():
             # Get an array of values from the queue and convert to bytes
-            databytes = self.q.get().tobytes()
+            data = self.q.get()
+            databytes = array('B', data)    # faster than bytearray
             
             # Iterate over array, convert to hex and send
             i = 0
@@ -74,6 +80,8 @@ class SerialSender(Thread):
                 bytetosend = hex(databytes[i])
                 #print("Sending: ", bytetosend)
                 self.port.write(bytetosend)
+                
+        time.sleep(0.5)
         
         
     def __del__(self):

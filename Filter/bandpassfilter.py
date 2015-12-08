@@ -9,6 +9,9 @@ class BandPassFilter(Thread):
     i = 0
     
     def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5):
+        """This class takes in a complete signal, splits it and
+        puts filtered chunks in a shared queue object
+        """        
         # Shared queue object        
         self.q = q
         
@@ -38,6 +41,10 @@ class BandPassFilter(Thread):
             
             self.i = self.i + 1
             print("Filtering")
+            
+            # RESET
+            if self.i >= self.chunks:
+                self.i = 0
 
             time.sleep(0.5)
     

@@ -21,6 +21,7 @@ class MusicPlayer(Thread):
     def run(self):
         while self.i < 119:
             print("Musicplayer thread")
+            # qsize() is unreliable
             if not self.q.empty() and self.q.qsize() > self.minblocks:
                 sd.play(self.q.get())
                 self.i = self.i + 1
