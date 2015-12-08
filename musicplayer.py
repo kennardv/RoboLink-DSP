@@ -13,20 +13,37 @@ import time
 class MusicPlayer(Thread):
     i = 0
     
-    def __init__(self, q, minimumblocks=10):
+    def __init__(self, q, minimumblocks=10, sleeptime=0.2):
         self.q = q
+        self.sleeptime = sleeptime
         self.minblocks = minimumblocks
         Thread.__init__(self)
         
     def run(self):
-        while self.i < 119:
-            print("Musicplayer thread")
+        while self.i < 110:
             # qsize() is unreliable
             if not self.q.empty() and self.q.qsize() > self.minblocks:
-                sd.play(self.q.get())
-                self.i = self.i + 1
+                # Get all values from all chunks and put in a list
+                data = []
+                n = 0
+                for n in range(self.minblocks):
+                    # get minblocks amount of chunks
+                    tmp = self.q.get()
 
-            time.sleep(0.5)
+                    n = n + 1
+
+                    m = 0
+                    for m in range(len(tmp)):
+                        # append all values in chunk to data list
+                        data.append(tmp[m])
+                        m = m + 1
+
+                    self.i = self.i + 1
+
+                print("Musicplayer: Playing data with length: ", len(data))
+                sd.play(data)
+
+            time.sleep(self.sleeptime)
         
         # Optional: example
         # Get data and event
