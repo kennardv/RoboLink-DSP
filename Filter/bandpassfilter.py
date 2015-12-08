@@ -1,27 +1,76 @@
 from scipy.signal import butter, lfilter
+import numpy as np
+import math
+from threading import Thread, Event
+from multiprocessing import Queue
+import time
 
-class BandPassFilter:
-    def __init__(self, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5):
+class BandPassFilter(Thread):
+    i = 0
+    
+    def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5, sleeptime=0.2):
+        """This class takes in a complete signal, splits it and
+        puts filtered chunks in a shared queue object
+        """        
+        # Shared queue object        
+        self.q = q
+        
+        # Split data in chunks
+        n = len(data)
+        self.chunks = math.ceil(n/chunksize)
+        self.data = self.splitData(data, self.chunks)
+        
+        
         self.lowcut = lowcut
         self.highcut = highcut
         self.fs = fs
         self.order = order
+        
+        # Get filter coefficients
+        self.b, self.a = self.butter_bandpass(order)
 
-
+        self.sleeptime = sleeptime
+        Thread.__init__(self)
+        
+    def run(self):
+        """ Iterate over the blocks of data.
+        Every block is filtered and added to the shared queue        
+        """
+        while self.i < self.chunks:
+            filtered = self.butter_bandpass_filter(self.data[self.i])
+            self.q.put(filtered)
+            
+            self.i = self.i + 1
+            print("Filtering chunk nr: ", self.i)
+            
+            # RESET
+            """if self.i >= self.chunks:
+                self.i = 0
+            """
+            
+            time.sleep(self.sleeptime)
+    
+    
+    def butter_bandpass_filter(self, data, order=5):
+        """ Returns an array of filtered values"""
+        #b, a = self.butter_bandpass(order)
+        y = lfilter(self.b, self.a, data)
+        return y
+        
+        
     def butter_bandpass(self, order=5):
         nyq = 0.5 * self.fs
         low = self.lowcut / nyq
         high = self.highcut / nyq
         b, a = butter(order, [low, high], btype='band')
         return b, a
-    
-    
-    def butter_bandpass_filter(self, data, order=5):
-        b, a = self.butter_bandpass(order)
-        y = lfilter(b, a, data)
-        return y
         
-    def run(self):
+    def splitData(self, data, chunks):
+        return np.array_split(data, chunks)
+        
+    
+    
+    def show(self):
         import numpy as np
         import matplotlib.pyplot as plt
         from scipy.signal import freqz

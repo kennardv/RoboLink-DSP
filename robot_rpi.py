@@ -7,8 +7,12 @@ Created on Thu Dec  3 13:02:26 2015
 
 import numpy as np
 import sounddevice as sd
+import wave, math
+from scipy import arange
+from queue import Queue
 
 from UART import serialtransceiver
+import musicplayer
 
 # Custom plotting class
 import plotter
@@ -19,20 +23,16 @@ import plotter
 chunksize = 1024
 Fs = 22050
 
-# get serial transceiver obj
-stc = serialtransceiver.SerialTransceiver('/dev/ttyAMA0', 115200)
+# Create the shared queues: qs = sound | qc = commands
+qs = Queue()
+qc = Queue()
+# get serial transceiver thread obj
+sr = serialtransceiver.SerialReceiver(qs, qc, '/dev/ttyAMA0', 115200)
+# get musicplayer thread obj
+mp = musicplayer.MusicPlayer(qs)
 
-
-yRecvTotal = np.array([], dtype=np.int16)
-i = 0
-while 1:
-    # Receive chunk of signal via serial port
-    yRecv = stc.receive(chunksize)
-    yRecvTotal = np.append(yRecvTotal, yRecv)
-    
-    # Play filtered chunk of signal via jack
-    sd.play(yRecv)
-
+sr.start()
+mp.start()
 
 
 # Plot the total received signal
