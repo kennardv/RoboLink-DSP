@@ -32,13 +32,15 @@ class SerialReceiver(Thread):
         
     def run(self):
         while True:
-            rcv = self.port.readline()
+            val = self.port.readline()
+            val = val.decode()
             try:
-                val = np.float64(rcv)
+                val = np.float64(val)
                 self.data = np.append(self.data, val)
             except ValueError:
-                print("Not a float!")
+                print("Not a float!", val)
                 
+            time.sleep(0.5)
             
             if len(self.data) >= self.readlength:
                 # Add data array to queue
@@ -85,9 +87,11 @@ class SerialSender(Thread):
             i = 0
             for i in range(len(data)):
                 val = data[i]
-                print(val)
                 val = str(val) + "\n"
                 self.port.write(val.encode())
+                print(val)
+                
+                time.sleep(0.5)
                 
             time.sleep(0.5)
                 

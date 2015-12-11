@@ -9,7 +9,7 @@ import numpy as np
 import sounddevice as sd
 import wave, math
 from scipy import arange
-from queue import Queue
+from multiprocessing import Queue
 
 from UART import serialtransceiver
 import musicplayer
