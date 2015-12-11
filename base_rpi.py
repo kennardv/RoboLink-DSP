@@ -64,7 +64,7 @@ bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # get serial transceiver obj
-ss = serialtransceiver.SerialSender(q, 'COM255', 9600)
+ss = serialtransceiver.SerialSender(q, 'COM3', chunksize, baudrate=115200)
 
 # Start threads
 bpf.start()
@@ -72,8 +72,8 @@ ss.start()
 
 
 # Clean up threads
-bpf.join()
-ss.join()
+#bpf.join()
+#ss.join()
 
 
 # Plot the total filtered signal to check if append works correctly

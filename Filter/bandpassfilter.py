@@ -8,7 +8,7 @@ import time
 class BandPassFilter(Thread):
     i = 0
     
-    def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5, sleeptime=0.2):
+    def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5, sleeptime=0.5):
         """This class takes in a complete signal, splits it and
         puts filtered chunks in a shared queue object
         """        
@@ -37,11 +37,11 @@ class BandPassFilter(Thread):
         Every block is filtered and added to the shared queue        
         """
         while self.i < self.chunks:
+            print("Filtering chunk nr: ", self.i)
             filtered = self.butter_bandpass_filter(self.data[self.i])
             self.q.put(filtered)
             
             self.i = self.i + 1
-            print("Filtering chunk nr: ", self.i)
             
             # RESET
             """if self.i >= self.chunks:

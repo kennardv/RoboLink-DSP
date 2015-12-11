@@ -13,10 +13,12 @@ import time
 class MusicPlayer(Thread):
     i = 0
     
-    def __init__(self, q, minimumblocks=10, sleeptime=0.2):
+    def __init__(self, q, Fs, minimumblocks=10, sleeptime=0.2):
         self.q = q
+        self.Fs = Fs
         self.sleeptime = sleeptime
         self.minblocks = minimumblocks
+        
         Thread.__init__(self)
         
     def run(self):

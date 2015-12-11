@@ -13,6 +13,7 @@ from multiprocessing import Queue
 import time
 
 class SerialReceiver(Thread):
+    data = np.array([])
     
     def __init__(self, qs, qc, portname, readlength, baudrate=115200, timeout=1.0):
         """Constantly polls the serial port for data and adds it to the queue object"""        
@@ -26,34 +27,40 @@ class SerialReceiver(Thread):
                                   bytesize = serial.EIGHTBITS,
                                   timeout=timeout
                                   )
-        self.port.open()
+        
         Thread.__init__(self)
         
-    def __del__(self):
-        self.port.close()
-        
     def run(self):
-        data = self.port.read(self.readlength)
-        
-        # Sender converted to bytearray so convert back        
-        data = array('i', data)
-        # Create numpy array from data
-        data = np.fromstring(data, dtype=np.int16)
-        #data = map(int, data)
-        
-        # Add received data
-        self.qs.put(data)
-        
-        # Optional: example
-        #evt = Event()
-        #self.qs.put(data, evt)
-        
-        # Wait for consumer to process the item
-        #evt.wait()
+        while True:
+            rcv = self.port.readline()
+            try:
+                val = np.float64(rcv)
+                self.data = np.append(self.data, val)
+            except ValueError:
+                print("Not a float!")
+                
+            
+            if len(self.data) >= self.readlength:
+                # Add data array to queue
+                self.qs.put(self.data)
+                
+                # Clear array
+                self.data = np.array([])
+                
+                time.sleep(0.3)
+            
+            # Optional: example
+            #evt = Event()
+            #self.qs.put(data, evt)
+            
+            # Wait for consumer to process the item
+            #evt.wait()
         
         
 class SerialSender(Thread):
-    
+    exitFlag = 0
+    i = 0
+        
     def __init__(self, q, portname, readlength, baudrate=115200, timeout=1.0):
         self.q = q
         self.readlength = readlength
@@ -62,27 +69,48 @@ class SerialSender(Thread):
                                   parity = serial.PARITY_NONE,
                                   stopbits = serial.STOPBITS_ONE,
                                   bytesize = serial.EIGHTBITS,
-                                  timeout=timeout
+                                  timeout=timeout,
+                                  xonxoff = False
                                   )
-        self.port.open()
+        # WINDOWS        
+        #self.port.open()
         Thread.__init__(self)
         
         
     def run(self):
-        if not self.q.empty():
-            # Get an array of values from the queue and convert to bytes
+        while not self.exitFlag:
+            #if not self.q.empty():
             data = self.q.get()
-            databytes = array('B', data)    # faster than bytearray
-            
-            # Iterate over array, convert to hex and send
+
             i = 0
-            for i in range(len(databytes)):
-                bytetosend = hex(databytes[i])
-                #print("Sending: ", bytetosend)
-                self.port.write(bytetosend)
+            for i in range(len(data)):
+                val = data[i]
+                print(val)
+                val = str(val) + "\n"
+                self.port.write(val.encode())
                 
-        time.sleep(0.5)
+            time.sleep(0.5)
+                
+            
+            """i = 0
+            for i in range(len(data)):
+                val = data[i]
+                val = str(val)
+                print(val)
+                val = val.encode()
+                self.port.write(val)
+                time.sleep(0.5)"""
+            
+            """data = str(data)
+            data = data.encode()
+            numOfBytes = self.port.write(data)
+            print(numOfBytes)
+            
+            time.sleep(1)"""
+                
+            #self.exitFlag = 1
         
-        
-    def __del__(self):
-        self.port.close()
+    
+    # WINDOWS
+    #def __del__(self):
+        #self.port.close()
