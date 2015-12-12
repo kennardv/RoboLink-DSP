@@ -9,7 +9,6 @@ Packages:
 sudo apt-get install python-pip python-dev
 sudo apt-get install libffi-dev
 
-sudo pip install cffi
 sudo pip install sounddevice
 ```
 
