@@ -63,7 +63,7 @@ class SerialSender(Thread):
     exitFlag = 0
     i = 0
         
-    def __init__(self, q, portname, readlength, baudrate=115200, timeout=1.0):
+    def __init__(self, q, portname, readlength, baudrate=115200, timeout=1.0):        
         self.q = q
         self.readlength = readlength
         self.port = serial.Serial(portname,
@@ -82,16 +82,18 @@ class SerialSender(Thread):
     def run(self):
         while not self.exitFlag:
             #if not self.q.empty():
+            eol = b'\r'
             data = self.q.get()
 
             i = 0
             for i in range(len(data)):
                 val = data[i]
-                val = str(val) + "\n"
+                val = str(val)
                 self.port.write(val.encode())
+                self.port.write(eol)
                 print(val)
                 
-                time.sleep(0.5)
+                #time.sleep(0.5)
                 
             time.sleep(0.5)
                 
