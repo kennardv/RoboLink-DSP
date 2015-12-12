@@ -27,7 +27,7 @@ Fs = 22050
 qs = Queue()
 qc = Queue()
 # get serial transceiver thread obj
-sr = serialtransceiver.SerialReceiver(qs, qc, '/dev/ttyAMA0', chunksize, 115200)
+sr = serialtransceiver.SerialReceiver(qs, qc, '/dev/ttyAMA0', chunksize, baudrate=115200)
 # get musicplayer thread obj
 mp = musicplayer.MusicPlayer(qs, Fs)
 

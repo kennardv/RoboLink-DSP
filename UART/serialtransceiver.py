@@ -14,8 +14,9 @@ import time
 
 class SerialReceiver(Thread):
     data = np.array([])
+    strval = ''
     
-    def __init__(self, qs, qc, portname, readlength, baudrate=115200, timeout=1.0):
+    def __init__(self, qs, qc, portname, readlength, baudrate=115200, timeout=1):
         """Constantly polls the serial port for data and adds it to the queue object"""        
         self.qs = qs
         self.qc = qc
@@ -29,18 +30,40 @@ class SerialReceiver(Thread):
                                   )
         
         Thread.__init__(self)
+
+    def _readline(self):
+        # Specify end of line char
+        eol = b'\r'
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            c = self.port.read(1)
+            if c:
+                line += c
+                if line[-leneol:] == eol:
+                    line = line[:-leneol]
+                    break
+            else:
+                break
+        return bytes(line)
         
     def run(self):
         while True:
-            val = self.port.readline()
-            val = val.decode()
+            tmp = self._readline()
+            tmp = tmp.decode()
+            print(tmp)
+            #if tmp != "\n":
+            #    self.strval = self.strval + tmp
+            #elif tmp == "\n":
             try:
-                val = np.float64(val)
+                val = np.float64(tmp)
+                print(val)
                 self.data = np.append(self.data, val)
+                print(type(val))
             except ValueError:
-                print("Not a float!", val)
+                print("Not a float!", self.strval)
                 
-            time.sleep(0.5)
+            #time.sleep(0.5)
             
             if len(self.data) >= self.readlength:
                 # Add data array to queue
