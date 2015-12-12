@@ -64,7 +64,7 @@ bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # get serial transceiver obj
-ss = serialtransceiver.SerialSender(q, 'COM3', chunksize, baudrate=115200)
+ss = serialtransceiver.SerialSender(q, chunksize, 'COM3', baudrate=115200)
 
 # Start threads
 bpf.start()

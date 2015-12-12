@@ -13,14 +13,21 @@ from multiprocessing import Queue
 import time
 
 class SerialReceiver(Thread):
-    data = np.array([])
-    strval = ''
+    # Specify end of line char
+    eol = b'\r'
+    leneol = len(eol)
     
-    def __init__(self, qs, qc, portname, readlength, baudrate=115200, timeout=1):
+    exitFlag = 0
+    
+    # Array to hold incoming values
+    data = np.array([])
+    
+    
+    def __init__(self, qs, qc, chunksize, portname, baudrate=115200, timeout=1):
         """Constantly polls the serial port for data and adds it to the queue object"""        
         self.qs = qs
         self.qc = qc
-        self.readlength = readlength
+        self.chunksize = chunksize
         self.port = serial.Serial(portname,
                                   baudrate,
                                   parity = serial.PARITY_NONE,
@@ -30,44 +37,29 @@ class SerialReceiver(Thread):
                                   )
         
         Thread.__init__(self)
-
-    def _readline(self):
-        # Specify end of line char
-        eol = b'\r'
-        leneol = len(eol)
-        line = bytearray()
-        while True:
-            c = self.port.read(1)
-            if c:
-                line += c
-                if line[-leneol:] == eol:
-                    line = line[:-leneol]
-                    break
-            else:
-                break
-        return bytes(line)
         
     def run(self):
-        while True:
-            tmp = self._readline()
-            tmp = tmp.decode()
-            print(tmp)
-            #if tmp != "\n":
-            #    self.strval = self.strval + tmp
-            #elif tmp == "\n":
+        while not self.exitFlag:
+            # Custom readline function
+            byteline = self._readline()
+            line = byteline.decode()
             try:
-                val = np.float64(tmp)
-                print(val)
+                # Parse to a float
+                val = np.float64(line)
                 self.data = np.append(self.data, val)
-                print(type(val))
-            except ValueError:
-                print("Not a float!", self.strval)
                 
-            #time.sleep(0.5)
+                #print("Added: ", type(val))                
+                #print(self.data)
+            except ValueError:
+                print("Not a float!", line)
             
-            if len(self.data) >= self.readlength:
+            
+            if len(self.data) >= self.chunksize:
                 # Add data array to queue
                 self.qs.put(self.data)
+                
+                print(len(self.data))
+                print(self.data)
                 
                 # Clear array
                 self.data = np.array([])
@@ -80,22 +72,43 @@ class SerialReceiver(Thread):
             
             # Wait for consumer to process the item
             #evt.wait()
+            
+    
+    def _readline(self):
+        """Custom serial readline function.
+        Data is read from the serial port until an end-of-line character is found.
+        The received string is returned in encoded form.        
+        """
+        line = bytearray()
+        while True:
+            c = self.port.read(1)
+            if c:
+                line += c
+                if line[-self.leneol:] == self.eol:
+                    # Cut off eol char
+                    line = line[:-self.leneol]
+                    break
+            else:
+                break
+        return bytes(line)
         
         
 class SerialSender(Thread):
+    # Specify end of line char
+    eol = b'\r'
+    leneol = len(eol)
+    
     exitFlag = 0
-    i = 0
         
-    def __init__(self, q, portname, readlength, baudrate=115200, timeout=1.0):        
+    def __init__(self, q, chunksize, portname, baudrate=115200, timeout=1.0):        
         self.q = q
-        self.readlength = readlength
+        self.chunksize = chunksize
         self.port = serial.Serial(portname,
                                   baudrate,
                                   parity = serial.PARITY_NONE,
                                   stopbits = serial.STOPBITS_ONE,
                                   bytesize = serial.EIGHTBITS,
-                                  timeout=timeout,
-                                  xonxoff = False
+                                  timeout=timeout
                                   )
         # WINDOWS        
         #self.port.open()
@@ -105,41 +118,13 @@ class SerialSender(Thread):
     def run(self):
         while not self.exitFlag:
             #if not self.q.empty():
-            eol = b'\r'
             data = self.q.get()
 
             i = 0
             for i in range(len(data)):
                 val = data[i]
-                val = str(val)
-                self.port.write(val.encode())
-                self.port.write(eol)
-                print(val)
-                
-                #time.sleep(0.5)
+                line = str(val)
+                byteline = line.encode() + self.eol
+                self.port.write(byteline)
                 
             time.sleep(0.5)
-                
-            
-            """i = 0
-            for i in range(len(data)):
-                val = data[i]
-                val = str(val)
-                print(val)
-                val = val.encode()
-                self.port.write(val)
-                time.sleep(0.5)"""
-            
-            """data = str(data)
-            data = data.encode()
-            numOfBytes = self.port.write(data)
-            print(numOfBytes)
-            
-            time.sleep(1)"""
-                
-            #self.exitFlag = 1
-        
-    
-    # WINDOWS
-    #def __del__(self):
-        #self.port.close()
