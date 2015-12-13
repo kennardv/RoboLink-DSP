@@ -42,7 +42,8 @@ class SerialReceiver(Thread):
     def run(self):
         while not self.exitFlag:
             # Custom readline function
-            arr = self.__readline()
+            # List with values as strings
+            arr = self._readline()
             
             line = ''
             for i in range(len(arr)):
@@ -51,9 +52,6 @@ class SerialReceiver(Thread):
                     # Parse to a float
                     val = np.float64(line)
                     self.data = np.append(self.data, val)
-                    
-                    #print("Added: ", type(val))                
-                    #print(self.data)
                 except ValueError:
                     print("Not a float!", line)
             
@@ -69,6 +67,7 @@ class SerialReceiver(Thread):
                 # Clear array
                 self.data = np.array([])
                 
+                # Wait
                 time.sleep(0.3)
             
             # Optional: example
@@ -79,7 +78,7 @@ class SerialReceiver(Thread):
             #evt.wait()
             
     
-    def _readline(self):
+    def readlineSingleByte(self):
         """Custom serial readline function.
         Data is read from the serial port until an end-of-line character is found.
         The received string is returned in encoded form.        
@@ -98,36 +97,37 @@ class SerialReceiver(Thread):
         return bytes(line)
         
     
-    def __readline(self):
+    def _readline(self, length=100):
         """Custom serial readline function.
         Data is read from the serial port until an end-of-line character is found.
-        The received string is returned in encoded form.        
+        The received values are returned as an array of strings.        
         """
         valarr = []
         while True:
             # Read from serial port
-            c = self.port.read(100)
+            c = self.port.read(length)
             if c:
+                # Append to buffer
                 self.buffer += c
-                #print(self.buffer)
                 
                 i = 0
                 while i < len(self.buffer):
                     # From i to i+length of eol
                     if self.buffer[i:i+self.leneol] == self.eol:
                         # Get value from line
-                        # Bytearray
-                        val = self.buffer[:i]
-                        val = bytes(val)
+                        val = self.buffer[:i]       # Bytearray
+                        val = bytes(val)            # To string
+                        
                         # Add found val to list
                         valarr.append(val)
                         
-                        # Cut off just found value + eol
+                        # Cut off just found value + eol from buffer
                         self.buffer = self.buffer[i+self.leneol:]
                         i = 0
                     
                     i += 1
-
+                
+                # Break when buffer is empty
                 break
                     
             else:
