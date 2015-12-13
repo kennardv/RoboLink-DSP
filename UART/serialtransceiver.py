@@ -21,6 +21,7 @@ class SerialReceiver(Thread):
     
     # Array to hold incoming values
     data = np.array([])
+    buffer = bytearray()
     
     
     def __init__(self, qs, qc, chunksize, portname, baudrate=115200, timeout=1):
@@ -41,24 +42,28 @@ class SerialReceiver(Thread):
     def run(self):
         while not self.exitFlag:
             # Custom readline function
-            byteline = self._readline()
-            line = byteline.decode()
-            try:
-                # Parse to a float
-                val = np.float64(line)
-                self.data = np.append(self.data, val)
-                
-                #print("Added: ", type(val))                
-                #print(self.data)
-            except ValueError:
-                print("Not a float!", line)
+            arr = self.__readline()
+            
+            line = ''
+            for i in range(len(arr)):
+                line = arr[i].decode()
+                try:
+                    # Parse to a float
+                    val = np.float64(line)
+                    self.data = np.append(self.data, val)
+                    
+                    #print("Added: ", type(val))                
+                    #print(self.data)
+                except ValueError:
+                    print("Not a float!", line)
             
             
             if len(self.data) >= self.chunksize:
                 # Add data array to queue
                 self.qs.put(self.data)
                 
-                print(len(self.data))
+                print("Size queue: ", self.qs.qsize())
+                print("Length data: ", len(self.data))
                 print(self.data)
                 
                 # Clear array
@@ -91,6 +96,40 @@ class SerialReceiver(Thread):
             else:
                 break
         return bytes(line)
+        
+    
+    def __readline(self):
+        """Custom serial readline function.
+        Data is read from the serial port until an end-of-line character is found.
+        The received string is returned in encoded form.        
+        """
+        valarr = []
+        while True:
+            # Read from serial port
+            c = self.port.read(100)
+            if c:
+                self.buffer += c
+                
+                i = 0
+                while i < len(self.buffer):
+                    # From i to i+length of eol
+                    if self.buffer[i:i+self.leneol] == self.eol:
+                        # Get value from line
+                        val = self.buffer[:i]
+                        # Add found val to list
+                        valarr.append(val)
+                        
+                        # Cut off just found value + eol
+                        self.buffer = self.buffer[i+self.leneol:]
+                        i = 0
+                    
+                    i += 1
+                    
+            else:
+                break
+            
+        
+        return bytes(valarr)
         
         
 class SerialSender(Thread):
