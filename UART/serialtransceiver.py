@@ -46,7 +46,7 @@ class SerialReceiver(Thread):
             
             line = ''
             for i in range(len(arr)):
-                line = arr[i].decode()
+                line = arr[i]
                 try:
                     # Parse to a float
                     val = np.float64(line)
@@ -109,13 +109,16 @@ class SerialReceiver(Thread):
             c = self.port.read(100)
             if c:
                 self.buffer += c
+                #print(self.buffer)
                 
                 i = 0
                 while i < len(self.buffer):
                     # From i to i+length of eol
                     if self.buffer[i:i+self.leneol] == self.eol:
                         # Get value from line
+                        # Bytearray
                         val = self.buffer[:i]
+                        val = bytes(val)
                         # Add found val to list
                         valarr.append(val)
                         
@@ -124,12 +127,13 @@ class SerialReceiver(Thread):
                         i = 0
                     
                     i += 1
+
+                break
                     
             else:
                 break
             
-        
-        return bytes(valarr)
+        return valarr
         
         
 class SerialSender(Thread):
