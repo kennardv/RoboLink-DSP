@@ -13,7 +13,7 @@ import time
 class MusicPlayer(Thread):
     i = 0
     
-    def __init__(self, q, Fs, minimumblocks=10, sleeptime=0.1):
+    def __init__(self, q, Fs, minimumblocks=10, sleeptime=0.05):
         self.q = q
         self.Fs = Fs
         self.sleeptime = sleeptime

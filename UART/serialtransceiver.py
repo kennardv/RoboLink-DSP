@@ -36,6 +36,7 @@ class SerialReceiver(Thread):
                                   bytesize = serial.EIGHTBITS,
                                   timeout=timeout
                                   )
+        self.port.flushInput()
         
         Thread.__init__(self)
         
@@ -44,7 +45,7 @@ class SerialReceiver(Thread):
             # Custom readline function
             # List with values as strings
             #t1 = time.clock()
-            arr = self._readline()
+            arr = self._readline(1000)
             #print("Time spent reading + decoding: ", time.clock()-t1)
             #t2 = time.clock()
             line = ''
@@ -52,7 +53,7 @@ class SerialReceiver(Thread):
                 line = arr[i]
                 try:
                     # Parse to a float
-                    val = np.int16(line)
+                    val = np.int32(line)
                     self.data = np.append(self.data, val)
                 except ValueError:
                     print("Not a float!", line)
@@ -64,13 +65,13 @@ class SerialReceiver(Thread):
                 
                 print("Size queue: ", self.qs.qsize())
                 print("Length data: ", len(self.data))
-                #print(self.data)
                 
                 # Clear array
                 self.data = np.array([])
-                
-                # Wait
-                time.sleep(0.1)
+
+                if not self.port.inWaiting():                    
+                    # Wait
+                    time.sleep(0.05)
             
             # Optional: example
             #evt = Event()
@@ -106,34 +107,37 @@ class SerialReceiver(Thread):
         """
         valarr = []
         while True:
-            # Read from serial port
-            c = self.port.read(length)
-            if c:
-                # Append to buffer
-                self.buffer += c
-                
-                i = 0
-                while i < len(self.buffer):
-                    # From i to i+length of eol
-                    if self.buffer[i:i+self.leneol] == self.eol:
-                        # Get value from line
-                        val = self.buffer[:i]       # Bytearray
-                        val = bytes(val)            # To string
-                        
-                        # Add found val to list
-                        valarr.append(val)
-                        
-                        # Cut off just found value + eol from buffer
-                        self.buffer = self.buffer[i+self.leneol:]
-                        i = 0
+            try:
+                # Read from serial port
+                c = self.port.read(length)
+                if c:
+                    # Append to buffer
+                    self.buffer += c
                     
-                    i += 1
-                
-                # Break when buffer is empty
-                break
+                    i = 0
+                    while i < len(self.buffer):
+                        # From i to i+length of eol
+                        if self.buffer[i:i+self.leneol] == self.eol:
+                            # Get value from line
+                            val = self.buffer[:i]       # Bytearray
+                            val = bytes(val)            # To string
+                            
+                            # Add found val to list
+                            valarr.append(val)
+                            
+                            # Cut off just found value + eol from buffer
+                            self.buffer = self.buffer[i+self.leneol:]
+                            i = 0
+                        
+                        i += 1
                     
-            else:
-                break
+                    # Break when buffer is empty
+                    break
+                        
+                else:
+                    break
+            except serial.SerialException:
+                print("Nothing in buffer")
 
         return valarr
         
