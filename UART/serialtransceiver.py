@@ -43,18 +43,20 @@ class SerialReceiver(Thread):
         while not self.exitFlag:
             # Custom readline function
             # List with values as strings
+            #t1 = time.clock()
             arr = self._readline()
-            
+            #print("Time spent reading + decoding: ", time.clock()-t1)
+            #t2 = time.clock()
             line = ''
             for i in range(len(arr)):
                 line = arr[i]
                 try:
                     # Parse to a float
-                    val = np.float64(line)
+                    val = np.int16(line)
                     self.data = np.append(self.data, val)
                 except ValueError:
                     print("Not a float!", line)
-            
+            #print("Time spent parsing: ", time.clock()-t2)
             
             if len(self.data) >= self.chunksize:
                 # Add data array to queue
@@ -62,13 +64,13 @@ class SerialReceiver(Thread):
                 
                 print("Size queue: ", self.qs.qsize())
                 print("Length data: ", len(self.data))
-                print(self.data)
+                #print(self.data)
                 
                 # Clear array
                 self.data = np.array([])
                 
                 # Wait
-                time.sleep(0.3)
+                time.sleep(0.1)
             
             # Optional: example
             #evt = Event()
@@ -132,7 +134,7 @@ class SerialReceiver(Thread):
                     
             else:
                 break
-            
+
         return valarr
         
         
