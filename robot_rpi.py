@@ -21,7 +21,7 @@ import plotter
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 chunksize = 1024
-Fs = 22050
+Fs = 8000
 
 # Create the shared queues: qs = sound | qc = commands
 qs = Queue()
