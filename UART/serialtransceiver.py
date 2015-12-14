@@ -160,14 +160,24 @@ class SerialSender(Thread):
         
     def run(self):
         while not self.exitFlag:
+            t0 = time.clock()
             #if not self.q.empty():
             data = self.q.get()
 
+            #t1 = time.clock()
+            msgparts = []
             i = 0
             for i in range(len(data)):
                 val = data[i]
                 line = str(val)
-                byteline = line.encode() + self.eol
-                self.port.write(byteline)
+                line = line.encode()
+                msgparts.append(line + self.eol)
                 
-            time.sleep(0.5)
+            byteline = b"".join(msgparts)
+            #print("Time spent converting + joining: ", time.clock()-t1)
+            #t2 = time.clock()
+            self.port.write(byteline)
+            #print("Time spent writing to port: ", time.clock()-t2)
+                
+            print("Total time spent sending 1 chunk: ", time.clock()-t0)
+            time.sleep(0.05)

@@ -8,7 +8,7 @@ import time
 class BandPassFilter(Thread):
     i = 0
     
-    def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5, sleeptime=0.5):
+    def __init__(self, q, data, chunksize=1024, lowcut=200.0, highcut=1000.0, fs=5000.0, order=5, sleeptime=0.05):
         """This class takes in a complete signal, splits it and
         puts filtered chunks in a shared queue object
         """        
@@ -52,9 +52,12 @@ class BandPassFilter(Thread):
     
     
     def butter_bandpass_filter(self, data, order=5):
-        """ Returns an array of filtered values"""
+        """ Returns an array of filtered values.
+        Return type: numpy.int16"""
         #b, a = self.butter_bandpass(order)
         y = lfilter(self.b, self.a, data)
+        y = [np.int16(i) for i in y]
+        #print(type(y[2]))
         return y
         
         
