@@ -37,6 +37,7 @@ class SerialReceiver(Thread):
                                   timeout=timeout
                                   )
         
+        self.port.flushInput()
         Thread.__init__(self)
         
     def run(self):
@@ -155,31 +156,30 @@ class SerialSender(Thread):
                                   bytesize = serial.EIGHTBITS,
                                   timeout=timeout
                                   )
-        # WINDOWS        
-        #self.port.open()
+        
+        self.port.flushOutput()
         Thread.__init__(self)
         
         
     def run(self):
         while not self.exitFlag:
             t0 = time.clock()
-            #if not self.q.empty():
-            data = self.q.get()
+            try:
+                data = self.q.get()
 
-            #t1 = time.clock()
-            msgparts = []
-            i = 0
-            for i in range(len(data)):
-                val = data[i]
-                line = str(val)
-                line = line.encode()
-                msgparts.append(line + self.eol)
-                
-            byteline = b"".join(msgparts)
-            #print("Time spent converting + joining: ", time.clock()-t1)
-            #t2 = time.clock()
-            self.port.write(byteline)
-            #print("Time spent writing to port: ", time.clock()-t2)
+                msgparts = []
+                i = 0
+                for i in range(len(data)):
+                    val = data[i]
+                    line = str(val)
+                    line = line.encode()
+                    msgparts.append(line + self.eol)
+                    
+                byteline = b"".join(msgparts)
+                self.port.write(byteline)
+            except Queue.Empty:
+                print("Queue empty")
+                self.exitFlag = 1
                 
             print("Total time spent sending 1 chunk: ", time.clock()-t0)
-            time.sleep(0.05)
+            time.sleep(0.01)

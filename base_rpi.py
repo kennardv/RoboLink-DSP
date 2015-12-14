@@ -9,6 +9,7 @@ import wave
 import numpy as np
 from scipy import arange
 from multiprocessing import Queue
+import time
 
 #import sounddevice as sd
 
@@ -23,8 +24,8 @@ import plotter
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # WAV file
-wf = wave.open('Alarm01.wav', 'rb')
-y = np.fromstring(wf.readframes(-1), dtype=np.int16)        # read all frames
+wf = wave.open('mario_mono.wav', 'rb')
+y = np.fromstring(wf.readframes(50000), dtype=np.int16)        # read all frames
 y = y[0::2]                                                 # get left channel only
 
 Fs = wf.getframerate()                                      # Sampling rate
@@ -68,6 +69,8 @@ ss = serialtransceiver.SerialSender(q, chunksize, 'COM3', baudrate=115200)
 
 # Start threads
 bpf.start()
+
+time.sleep(0.5)
 ss.start()
 
 
