@@ -43,7 +43,7 @@ class MusicPlayer(Thread):
                     self.i = self.i + 1
 
                 print("Musicplayer: Playing data with length: ", len(data))
-                sd.play(data)
+                sd.play(data, self.Fs)
 
             time.sleep(self.sleeptime)
         
