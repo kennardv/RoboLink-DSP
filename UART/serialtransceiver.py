@@ -13,12 +13,22 @@ from multiprocessing import Queue
 import time
 
 class SerialReceiver(Thread):
+    # Specify end of line char
+    eol = b'\r'
+    leneol = len(eol)
     
-    def __init__(self, qs, qc, portname, readlength, baudrate=115200, timeout=1.0):
+    exitFlag = 0
+    
+    # Array to hold incoming values
+    data = np.array([])
+    buffer = bytearray()
+    
+    
+    def __init__(self, qs, qc, chunksize, portname, baudrate=115200, timeout=1):
         """Constantly polls the serial port for data and adds it to the queue object"""        
         self.qs = qs
         self.qc = qc
-        self.readlength = readlength
+        self.chunksize = chunksize
         self.port = serial.Serial(portname,
                                   baudrate,
                                   parity = serial.PARITY_NONE,
@@ -26,37 +36,123 @@ class SerialReceiver(Thread):
                                   bytesize = serial.EIGHTBITS,
                                   timeout=timeout
                                   )
-        self.port.open()
+        self.port.flushInput()
+        
+        self.port.flushInput()
         Thread.__init__(self)
         
-    def __del__(self):
-        self.port.close()
-        
     def run(self):
-        data = self.port.read(self.readlength)
+        while not self.exitFlag:
+            # Custom readline function
+            # List with values as strings
+            #t1 = time.clock()
+            arr = self._readline(1000)
+            #print("Time spent reading + decoding: ", time.clock()-t1)
+            #t2 = time.clock()
+            line = ''
+            for i in range(len(arr)):
+                line = arr[i]
+                try:
+                    # Parse to a float
+                    val = np.int32(line)
+                    self.data = np.append(self.data, val)
+                except ValueError:
+                    print("Not a float!", line)
+            #print("Time spent parsing: ", time.clock()-t2)
+            
+            if len(self.data) >= self.chunksize:
+                # Add data array to queue
+                self.qs.put(self.data)
+                
+                print("Size queue: ", self.qs.qsize())
+                print("Length data: ", len(self.data))
+                
+                # Clear array
+                self.data = np.array([])
+
+                if not self.port.inWaiting():                    
+                    # Wait
+                    time.sleep(0.05)
+            
+            # Optional: example
+            #evt = Event()
+            #self.qs.put(data, evt)
+            
+            # Wait for consumer to process the item
+            #evt.wait()
+            
+    
+    def readlineSingleByte(self):
+        """Custom serial readline function.
+        Data is read from the serial port until an end-of-line character is found.
+        The received string is returned in encoded form.        
+        """
+        line = bytearray()
+        while True:
+            c = self.port.read(1)
+            if c:
+                line += c
+                if line[-self.leneol:] == self.eol:
+                    # Cut off eol char
+                    line = line[:-self.leneol]
+                    break
+            else:
+                break
+        return bytes(line)
         
-        # Sender converted to bytearray so convert back        
-        data = array('i', data)
-        # Create numpy array from data
-        data = np.fromstring(data, dtype=np.int16)
-        #data = map(int, data)
-        
-        # Add received data
-        self.qs.put(data)
-        
-        # Optional: example
-        #evt = Event()
-        #self.qs.put(data, evt)
-        
-        # Wait for consumer to process the item
-        #evt.wait()
+    
+    def _readline(self, length=100):
+        """Custom serial readline function.
+        Data is read from the serial port until an end-of-line character is found.
+        The received values are returned as an array of strings.        
+        """
+        valarr = []
+        while True:
+            try:
+                # Read from serial port
+                c = self.port.read(length)
+                if c:
+                    # Append to buffer
+                    self.buffer += c
+                    
+                    i = 0
+                    while i < len(self.buffer):
+                        # From i to i+length of eol
+                        if self.buffer[i:i+self.leneol] == self.eol:
+                            # Get value from line
+                            val = self.buffer[:i]       # Bytearray
+                            val = bytes(val)            # To string
+                            
+                            # Add found val to list
+                            valarr.append(val)
+                            
+                            # Cut off just found value + eol from buffer
+                            self.buffer = self.buffer[i+self.leneol:]
+                            i = 0
+                        
+                        i += 1
+                    
+                    # Break when buffer is empty
+                    break
+                        
+                else:
+                    break
+            except serial.SerialException:
+                print("Nothing in buffer")
+
+        return valarr
         
         
 class SerialSender(Thread):
+    # Specify end of line char
+    eol = b'\r'
+    leneol = len(eol)
     
-    def __init__(self, q, portname, readlength, baudrate=115200, timeout=1.0):
+    exitFlag = 0
+        
+    def __init__(self, q, chunksize, portname, baudrate=115200, timeout=1.0):        
         self.q = q
-        self.readlength = readlength
+        self.chunksize = chunksize
         self.port = serial.Serial(portname,
                                   baudrate,
                                   parity = serial.PARITY_NONE,
@@ -64,25 +160,30 @@ class SerialSender(Thread):
                                   bytesize = serial.EIGHTBITS,
                                   timeout=timeout
                                   )
-        self.port.open()
+        
+        self.port.flushOutput()
         Thread.__init__(self)
         
         
     def run(self):
-        if not self.q.empty():
-            # Get an array of values from the queue and convert to bytes
-            data = self.q.get()
-            databytes = array('B', data)    # faster than bytearray
-            
-            # Iterate over array, convert to hex and send
-            i = 0
-            for i in range(len(databytes)):
-                bytetosend = hex(databytes[i])
-                #print("Sending: ", bytetosend)
-                self.port.write(bytetosend)
+        while not self.exitFlag:
+            t0 = time.clock()
+            try:
+                data = self.q.get()
+
+                msgparts = []
+                i = 0
+                for i in range(len(data)):
+                    val = data[i]
+                    line = str(val)
+                    line = line.encode()
+                    msgparts.append(line + self.eol)
+                    
+                byteline = b"".join(msgparts)
+                self.port.write(byteline)
+            except Queue.Empty:
+                print("Queue empty")
+                self.exitFlag = 1
                 
-        time.sleep(0.5)
-        
-        
-    def __del__(self):
-        self.port.close()
+            print("Total time spent sending 1 chunk: ", time.clock()-t0)
+            time.sleep(0.01)

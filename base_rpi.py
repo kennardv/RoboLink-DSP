@@ -9,6 +9,7 @@ import wave
 import numpy as np
 from scipy import arange
 from multiprocessing import Queue
+import time
 
 #import sounddevice as sd
 
@@ -23,8 +24,8 @@ import plotter
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # WAV file
-wf = wave.open('Alarm01.wav', 'rb')
-y = np.fromstring(wf.readframes(-1), dtype=np.int16)        # read all frames
+wf = wave.open('mario_mono.wav', 'rb')
+y = np.fromstring(wf.readframes(50000), dtype=np.int16)        # read all frames
 y = y[0::2]                                                 # get left channel only
 
 Fs = wf.getframerate()                                      # Sampling rate
@@ -64,16 +65,18 @@ bpf = bandpassfilter.BandPassFilter(q, y, chunksize, lowcut, highcut, Fs, order)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 # get serial transceiver obj
-ss = serialtransceiver.SerialSender(q, 'COM255', 9600)
+ss = serialtransceiver.SerialSender(q, chunksize, 'COM3', baudrate=115200)
 
 # Start threads
 bpf.start()
+
+time.sleep(0.5)
 ss.start()
 
 
 # Clean up threads
-bpf.join()
-ss.join()
+#bpf.join()
+#ss.join()
 
 
 # Plot the total filtered signal to check if append works correctly
