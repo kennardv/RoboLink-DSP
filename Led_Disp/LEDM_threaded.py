@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 # 8 band Audio equaliser from wav file
@@ -8,6 +9,11 @@
 #  www.stuffaboutcode.com
 
 music = "piano.wav" #"starwars_8kHz_16bit_mono.wav"
+
+#"200400hz.wav"#"test.wav"#"lol.wav"#"SineWave_450Hz_samp_2kHz_60s.wav""violin8kHz.wav""wombass.wav"
+#"mario_8kHz_16bit_mono.wav"##"starwars_8kHz_16bit_mono.wav"#"piano.wav""hwth.wav""hello_converted.wav""cantina.wav""starwarstheme.wav"
+
+
 
 import alsaaudio as aa
 from struct import unpack
