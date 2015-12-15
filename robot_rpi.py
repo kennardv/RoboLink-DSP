@@ -9,7 +9,7 @@ import numpy as np
 import sounddevice as sd
 import wave, math
 from scipy import arange
-from queue import Queue
+from multiprocessing import Queue
 
 from UART import serialtransceiver
 import musicplayer
@@ -21,15 +21,15 @@ import plotter
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 chunksize = 1024
-Fs = 22050
+Fs = 8000
 
 # Create the shared queues: qs = sound | qc = commands
 qs = Queue()
 qc = Queue()
 # get serial transceiver thread obj
-sr = serialtransceiver.SerialReceiver(qs, qc, '/dev/ttyAMA0', 115200)
+sr = serialtransceiver.SerialReceiver(qs, qc, chunksize, '/dev/ttyAMA0', baudrate=115200)
 # get musicplayer thread obj
-mp = musicplayer.MusicPlayer(qs)
+mp = musicplayer.MusicPlayer(qs, Fs)
 
 sr.start()
 mp.start()

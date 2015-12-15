@@ -11,10 +11,6 @@ class GPIOMapper():
     rpi = 0    
     
     def __init__(self, inputChannels, outputChannels):
-        """The *args parameter accepts an array of the form:
-        [1, 'OUT'], [4, 'IN'], [7, 'OUT'], ...
-        [pin nr, mode]
-        """
         #GPIO.setmode(GPIO.BCM)          # set board mode to Broadcom
         
         GPIO.setup(inputPins, GPIO.IN)
