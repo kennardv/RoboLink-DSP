@@ -241,7 +241,7 @@ try:
         # no Tread - output.write(data)
         thread.start_new_thread(output.write, (data))
 		# Set Levels
-        thread.start_new_thread(setlevels)
+        thread.start_new_thread(setlevels, ())
         
         #mcequaliser.drawEqualiser(matrix)
         
