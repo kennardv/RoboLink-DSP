@@ -25,7 +25,7 @@ import plotter
 
 # WAV file
 wf = wave.open('mario_mono.wav', 'rb')
-y = np.fromstring(wf.readframes(50000), dtype=np.int16)        # read all frames
+y = np.fromstring(wf.readframes(-1), dtype=np.int16)        # read all frames
 y = y[0::2]                                                 # get left channel only
 
 Fs = wf.getframerate()                                      # Sampling rate
