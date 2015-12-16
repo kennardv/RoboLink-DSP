@@ -12,6 +12,7 @@ import time
 
 class MusicPlayer(Thread):
     i = 0
+    exitFlag = 0
     
     def __init__(self, q, Fs, minimumblocks=10, sleeptime=0.05):
         self.q = q
@@ -22,7 +23,7 @@ class MusicPlayer(Thread):
         Thread.__init__(self)
         
     def run(self):
-        while self.i < 110:
+        while not self.exitFlag:
             # qsize() is unreliable
             if not self.q.empty() and self.q.qsize() > self.minblocks:
                 # Get all values from all chunks and put in a list
