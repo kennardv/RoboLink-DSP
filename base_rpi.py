@@ -36,7 +36,7 @@ T = n / Fs                                                  # Duration
 sw = wf.getsampwidth()
 """
 
-chunksize = 1024                                                # Chunk size
+chunksize = 100                                                # Chunk size
 #chunks = math.ceil(n/chunksize)                                 # Number of chunks
 
 wf.close()
